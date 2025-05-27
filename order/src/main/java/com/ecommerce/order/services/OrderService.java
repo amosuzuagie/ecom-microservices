@@ -70,7 +70,7 @@ public class OrderService {
                 order.getItems()
                         .stream().map(item-> new OrderItemDTO(
                                 item.getId(),
-                                item.getProductId(),
+                                String.valueOf(item.getProductId()),
                                 item.getQuantity(),
                                 item.getPrice(),
                                 item.getPrice().multiply(new BigDecimal(item.getQuantity()))

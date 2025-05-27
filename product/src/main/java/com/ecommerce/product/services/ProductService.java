@@ -4,6 +4,7 @@ import com.ecommerce.product.dto.ProductRequest;
 import com.ecommerce.product.dto.ProductResponse;
 import com.ecommerce.product.models.Product;
 import com.ecommerce.product.repositories.ProductRepository;
+import org.antlr.v4.runtime.misc.MultiMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +36,11 @@ public class ProductService {
                 .stream()
                 .map(this::mapToProductResponse)
                 .collect(Collectors.toList());
+    }
+
+    public Optional<ProductResponse> getProductById(Long productId) {
+        return productRepository.findByIdAndActiveTrue(productId)
+                .map(this::mapToProductResponse);
     }
 
     public boolean deleteProduct(long id) {
