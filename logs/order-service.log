@@ -276,3 +276,4 @@ Caused by: java.net.ConnectException: Connection refused: getsockopt
 2025-05-29T12:51:34.679+01:00  INFO 7632 --- [order-service] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
 2025-05-29T12:56:34.690+01:00  INFO 7632 --- [order-service] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
 2025-05-29T13:01:34.773+01:00  INFO 7632 --- [order-service] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-05-29T13:06:34.777+01:00  INFO 7632 --- [order-service] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
