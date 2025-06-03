@@ -1640,3 +1640,5 @@ reactor.netty.http.client.PrematureCloseException: Connection prematurely closed
 
 reactor.netty.http.client.PrematureCloseException: Connection prematurely closed BEFORE response
 
+2025-06-03T02:01:26.144+01:00  WARN 26776 --- [order-service] [HikariPool-1 housekeeper] [                                                 ] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=51s77ms943µs200ns).
+2025-06-03T02:02:24.373+01:00  INFO 26776 --- [order-service] [AsyncResolver-bootstrap-executor-%d] [                                                 ] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration

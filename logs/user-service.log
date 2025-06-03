@@ -1401,3 +1401,4 @@ reactor.netty.http.client.PrematureCloseException: Connection prematurely closed
 
 reactor.netty.http.client.PrematureCloseException: Connection prematurely closed BEFORE response
 
+2025-06-03T02:03:15.808+01:00  INFO 35900 --- [user-service] [AsyncResolver-bootstrap-executor-%d] [                                                 ] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
