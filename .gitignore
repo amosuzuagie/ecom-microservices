@@ -35,12 +35,13 @@ out/
 logs/
 *.log
 
-# Ignore MinIO local data
-additional/evaluate-prometheus/.data/
-
 ### OS Specific ###
 .DS_Store
 Thumbs.db
 
 ### Environment ###
 .env
+
+# Ignore MinIO, Prometheus, Loki runtime data
+additional/evaluate-prometheus/.data/
+
