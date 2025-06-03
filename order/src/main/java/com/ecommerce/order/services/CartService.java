@@ -59,8 +59,7 @@ public class CartService {
     }
 
     public boolean removeCartItem(String userId, String productId) {
-//        Optional<Product> productOpt = productRepository.findById(productId);
-//        Optional<User> userOpt = userRepository.findById(Long.valueOf(userId));
+        System.out.println("User: " +userId + " Product: " +productId);
         CartItem cartItem = cartItemRepository.findByUserIdAndProductId(userId, productId);
 
         if (cartItem != null) {
