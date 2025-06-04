@@ -7,8 +7,8 @@ import com.ecommerce.order.dto.Product;
 import com.ecommerce.order.dto.UserResponse;
 import com.ecommerce.order.models.CartItem;
 import com.ecommerce.order.repositories.CartItemRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +24,7 @@ public class CartService {
     private final ProductHttpInterface productHttpInterface;
     private final UserHttpInterface userHttpInterface;
 
+    @CircuitBreaker(name = "productService", fallbackMethod = "addToCartFallback")
     public Boolean addToCart(String userId, CartItemRequest request) {
 
         // Search and validate product and product quantity.
@@ -78,5 +79,11 @@ public class CartService {
 
     public void clearCart(String userId) {
         cartItemRepository.deleteByUserId(userId);
+    }
+
+    public Boolean addToCartFallback(String userId, CartItemRequest request, Exception exception) {
+        exception.printStackTrace();
+        System.out.println("FALLBACK CALLED");
+        return false;
     }
 }

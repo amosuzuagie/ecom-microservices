@@ -22,7 +22,7 @@ public class CartItemController {
         boolean addedToCart = cartService.addToCart(userId, request);
         return addedToCart ?
                 ResponseEntity.status(HttpStatus.CREATED).build() :
-                ResponseEntity.badRequest().body("Product Out of Stock, or User/Product not found");
+                ResponseEntity.badRequest().body("Request Not Completed | Product Out of Stock, User or Product not found.");
     }
 
     @DeleteMapping("/{productId}")
