@@ -1,5 +1,7 @@
 package com.ecommerce.order.controllers;
 
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -9,7 +11,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestController {
 
     @GetMapping
+    @RateLimiter(name = "rateBreaker", fallbackMethod = "getTestFallback")
     public String test() {
         return "Trace works!";
+    }
+
+    public String getTestFallback(Exception exception) {
+        return "Test Fallback";
     }
 }
