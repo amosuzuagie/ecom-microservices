@@ -17,27 +17,11 @@
         <processorPath>
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
         </processorPath>
-        <module name="user" />
+        <module name="notification" />
         <module name="product" />
         <module name="configserver" />
-      </profile>
-      <profile name="Annotation profile for order" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath>
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
-        </processorPath>
+        <module name="user" />
         <module name="order" />
-      </profile>
-      <profile name="Annotation profile for notification" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
-        </processorPath>
-        <module name="notification" />
       </profile>
     </annotationProcessing>
   </component>

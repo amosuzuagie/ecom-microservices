@@ -1,5 +1,6 @@
 package com.ecommerce.order.services;
 
+import com.ecommerce.order.dto.OrderCreatedEvent;
 import com.ecommerce.order.dto.OrderItemDTO;
 import com.ecommerce.order.dto.OrderResponse;
 import com.ecommerce.order.models.CartItem;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -26,8 +26,6 @@ public class OrderService {
 
     @Value("${rabbitmq.exchange.name}")
     private String exchangeName;
-    @Value("${rabbitmq.queue.name}")
-    private String queueName;
     @Value("${rabbitmq.routing.key}")
     private String routingKey;
 
@@ -69,10 +67,30 @@ public class OrderService {
 //            productRepository.save(product);
 //        });
 
-        rabbitTemplate.convertAndSend(exchangeName, routingKey,
-                Map.of("orderId", savedOrder.getId(), "status", savedOrder.getStatus()));
+        // Publish Order Event
+        OrderCreatedEvent event = new  OrderCreatedEvent(
+                savedOrder.getId(),
+                savedOrder.getUserId(),
+                savedOrder.getStatus(),
+                mapToOrderDTO(savedOrder.getItems(), savedOrder.getTotalAmount()),
+                savedOrder.getTotalAmount(),
+                savedOrder.getCreatedAt()
+        );
+
+        rabbitTemplate.convertAndSend(exchangeName, routingKey, event);
 
         return Optional.of(mapToOrderResponse(savedOrder));
+    }
+
+    private List<OrderItemDTO> mapToOrderDTO(List<OrderItem> items, BigDecimal totalAmount) {
+        return items.stream()
+                .map(item -> new OrderItemDTO(
+                        item.getId(),
+                        item.getProductId(),
+                        item.getQuantity(),
+                        item.getPrice(),
+                        totalAmount
+                )).toList();
     }
 
     private OrderResponse mapToOrderResponse(Order order) {
