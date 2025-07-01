@@ -9,8 +9,6 @@ import com.ecommerce.order.models.OrderItem;
 import com.ecommerce.order.models.OrderStatus;
 import com.ecommerce.order.repositories.OrderRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 
@@ -30,10 +28,6 @@ public class OrderService {
         if (cartItems.isEmpty()) {
             return Optional.empty();
         }
-
-//        Optional<User> userOpt = userRepository.findById(Long.valueOf(userId));
-//        if (userOpt.isEmpty()) return Optional.empty();
-//        User user = userOpt.get();
 
         BigDecimal totalPrice = cartItems.stream()
                 .map(CartItem::getTotalPrice)
