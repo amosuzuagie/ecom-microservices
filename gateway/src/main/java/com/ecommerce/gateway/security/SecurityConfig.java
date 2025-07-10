@@ -26,9 +26,9 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(
                         exchange -> exchange
-                                .pathMatchers("/users/**").hasRole("USER")
-                                .pathMatchers("/orders/**").hasRole("ORDER")
-                                .pathMatchers("/products/**").hasRole("PRODUCT")
+//                                .pathMatchers("/users/**").hasRole("USER")
+//                                .pathMatchers("/orders/**").hasRole("ORDER")
+//                                .pathMatchers("/products/**").hasRole("PRODUCT")
                                 .anyExchange().authenticated()
                 )
                 .oauth2ResourceServer(

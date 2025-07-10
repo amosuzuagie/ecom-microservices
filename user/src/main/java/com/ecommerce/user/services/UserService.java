@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private KeycloakAdminService keycloakAdminService;
 
     public List<UserResponse> fetchAllUser() {
         return userRepository.findAll().stream()
@@ -28,7 +30,11 @@ public class UserService {
 
 
     public void addUser(UserRequest request) {
+        String token = keycloakAdminService.getAdminAccessToken();
+        String keycloakId = keycloakAdminService.createKeycloakUser(token, request);
+
         User user = new User();
+        user.setKeycloakId(keycloakId);
         userRepository.save(mapRequestToUser(user, request));
     }
 
@@ -68,7 +74,7 @@ public class UserService {
 
     private UserResponse mapToUserResponse(User user) {
         UserResponse response = new UserResponse();
-        response.setId(String.valueOf(user.getId()));
+        response.setKeycloakId(user.getKeycloakId());
         response.setFirstName(user.getFirstName());
         response.setLastName(user.getLastName());
         response.setEmail(user.getEmail());
