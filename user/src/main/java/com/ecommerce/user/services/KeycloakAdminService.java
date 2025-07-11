@@ -35,22 +35,47 @@ public class KeycloakAdminService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
+//    public String getAdminAccessToken() {
+//        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+//        params.add("client_id", clientId);
+//        params.add("username", adminUsername);
+//        params.add("password", adminPassword);
+//        params.add("grant_type", "password");
+//
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+//        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(params, headers);
+//
+//        String url = keycloakServerUrl + "/realms/" + realm + "/protocol/openid-connect/token";
+//        ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
+//
+//        return response.getBody().get("access_token").toString();
+//    }
+
     public String getAdminAccessToken() {
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("client_id", clientId);
-        params.add("username", adminUsername);
-        params.add("password", adminPassword);
-        params.add("grant_type", "password");
+        try {
+            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            params.add("client_id", clientId);
+            params.add("username", adminUsername);
+            params.add("password", adminPassword);
+            params.add("grant_type", "password");
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(params, headers);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(params, headers);
 
-        String url = keycloakServerUrl + "/realms/" + realm + "/protocol/openid-connect/token";
-        ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
+            String url = keycloakServerUrl + "/realms/" + realm + "/protocol/openid-connect/token";
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
 
-        return response.getBody().get("access_token").toString();
+            return response.getBody().get("access_token").toString();
+
+        } catch (Exception e) {
+            System.err.println("Failed to get token: " + e.getMessage());
+            e.printStackTrace(); // TEMP log
+            throw new RuntimeException("Keycloak token retrieval failed", e);
+        }
     }
+
 
     public String createKeycloakUser(String token, UserRequest request) {
 
@@ -69,20 +94,21 @@ public class KeycloakAdminService {
         credentials.put("type", "password");
         credentials.put("value", request.getPassword());
         credentials.put("temporary", false);
+
         userPayload.put("credentials", List.of(credentials));
 
         HttpEntity<Map<String, Object>> entity =  new HttpEntity<>(userPayload, headers);
 
-        String url = "http://localhost:8443/admin/realms/ecom-app/users";
-//        String url = keycloakServerUrl + "/admin/realms/" + realm + "/users";
+//        String url = "http://localhost:8443/admin/realms/ecom-app/users";
+        String url = keycloakServerUrl + "/admin/realms/" + realm + "/users";
 
         ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
 
-        if (!HttpStatus.CREATED.equals(response.getStatusCode()))
+        if (!HttpStatus.CREATED.equals(response.getStatusCode())) {
             throw new RuntimeException("Failed to create user in keycloak " + response.getBody());
+        }
 
         // Extract user id from keycloak
-
         URI location = response.getHeaders().getLocation();
         if (location == null) throw new RuntimeException("Keycloak did not return location header " + response.getBody());
         String path = location.getPath();
