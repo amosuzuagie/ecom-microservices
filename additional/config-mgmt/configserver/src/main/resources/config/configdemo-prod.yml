@@ -1,0 +1,18 @@
+build:
+  id: 222
+  version: 2.0
+  name: "Native Prod-Build"
+  type: "Native Production Build"
+
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "busrefresh"

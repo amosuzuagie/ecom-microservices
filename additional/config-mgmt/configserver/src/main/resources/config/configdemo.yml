@@ -1,0 +1,27 @@
+#spring:
+#  application:
+#    name: configdemo
+#  profiles:
+#    active: dev
+#  config:
+#    import: optional:configserver:http://localhost:8888
+
+#build:
+#  id: 111
+#  version: 1.0
+#  name: "Native Default-Build"
+#  type: "Native Default Build"
+
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: busrefresh,health,info
+
