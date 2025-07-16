@@ -75,7 +75,7 @@ public class UserService {
 
     private UserResponse mapToUserResponse(User user) {
         UserResponse response = new UserResponse();
-        response.setKeycloakId(user.getKeycloakId());
+        response.setId(user.getId());
         response.setFirstName(user.getFirstName());
         response.setLastName(user.getLastName());
         response.setEmail(user.getEmail());
