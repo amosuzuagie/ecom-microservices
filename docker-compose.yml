@@ -1,6 +1,6 @@
 services:
   postgres:
-    container_name: postgres_container
+    container_name: postgres
     image: postgres:14
     environment:
       POSTGRES_USER: mstra
@@ -8,11 +8,13 @@ services:
       PGDATA: /data/postgres
     volumes:
       - postgres:/data/postgres
+      - ./init-multi-db.sql:/docker-entrypoint-initdb.d/init.sql # auto generate database
     ports:
       - "5433:5432"
     networks:
       - econ-network
     restart: unless-stopped
+
   pgadmin:
     container_name: pgadmin_container
     image: dpage/pgadmin4
@@ -27,6 +29,7 @@ services:
     networks:
       - econ-network
     restart: unless-stopped
+
   keycloak:
     container_name: keycloak
     image: quay.io/keycloak/keycloak:26.3.1
@@ -39,6 +42,7 @@ services:
       [ "start-dev" ]
     networks:
       - econ-network
+
   mongo:
     image: mongodb/mongodb-community-server:latest
     container_name: mongo
@@ -46,6 +50,7 @@ services:
       - "27018:27017"
     networks:
       - econ-network
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
@@ -54,6 +59,7 @@ services:
        ZOOKEEPER_TICK_TIME: 2000
     ports:
       - "2181:2181"
+
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
@@ -66,26 +72,166 @@ services:
       - zookeeper
     ports:
       - "9092:9092"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: mstra
+      RABBITMQ_DEFAULT_PASS: mstra
+    ports:
+      - "5672:5672"    # AMQP protocol port
+      - "15672:15672"  # Management console UI
+    depends_on:
+      - zookeeper
+    networks:
+      - econ-network
+    restart: unless-stopped
+
+  eureka:
+    build: ./eureka
+    container_name: eureka
+    ports:
+      - "8761:8761"
+    networks:
+      - econ-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   configserver:
     build: ./configserver
     container_name: configserver
     ports:
       - "8888:8888"
+    depends_on:
+      - eureka
+    networks:
+      - econ-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker,native
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - RABBITMQ_VIRTUAL_HOST=${RABBITMQ_VIRTUAL_HOST}
+      - SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS=/config
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "http://localhost:8888/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./configserver/src/main/resources/config:/config
+
+  gateway-service:
+    build: ./gateway
+    container_name: gateway
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://configserver:8888
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+      - rabbitmq
+      - eureka
+      - keycloak
+      - configserver
     networks:
       - econ-network
 
-#  rabbitmq:
-#    image: rabbitmq:4-management
-#    container_name: rabbitmq_container
-#    environment:
-#      RABBITMQ_DEFAULT_USER: guest
-#      RABBITMQ_DEFAULT_PASS: guest
-#    ports:
-#      - "5672:5672"    # AMQP protocol port
-#      - "15672:15672"  # Management console UI
-#    networks:
-#      - econ-network
-#    restart: unless-stopped
+  user-service:
+    build: ./user
+    container_name: user-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://configserver:8888
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - RABBITMQ_VIRTUAL_HOST=${RABBITMQ_VIRTUAL_HOST}
+      - MONGO_DB=${MONGO_DB}
+    ports:
+      - "8082:8082"
+    depends_on:
+      - eureka
+      - mongo
+      - keycloak
+      - rabbitmq
+      - configserver
+    networks:
+      - econ-network
+
+  product-service:
+    build: ./product
+    container_name: product-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://configserver:8888
+      - POSTGRE_DB=${PRODUCT_DB}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - RABBITMQ_VIRTUAL_HOST=${RABBITMQ_VIRTUAL_HOST}
+    ports:
+      - "8081:8081"
+    depends_on:
+      - eureka
+      - mongo
+      - keycloak
+      - rabbitmq
+      - configserver
+    networks:
+      - econ-network
+
+  order-service:
+    build: ./order
+    container_name: order-service
+    ports:
+      - "8083:8083"
+    environment:
+      - ORDER_DB=${ORDER_DB}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=docker
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - RABBITMQ_VIRTUAL_HOST=${RABBITMQ_VIRTUAL_HOST}
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://configserver:8888
+    depends_on:
+      - eureka
+      - mongo
+      - keycloak
+      - rabbitmq
+      - configserver
+    networks:
+      - econ-network
+
+  notification-service:
+    build: ./notification
+    container_name: notification
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - RABBITMQ_VIRTUAL_HOST=${RABBITMQ_VIRTUAL_HOST}
+    ports:
+      - 8084
+    depends_on:
+      - rabbitmq
+    networks:
+      - econ-network
 
 networks:
   econ-network:
